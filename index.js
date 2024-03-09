@@ -80,7 +80,7 @@ const htmlModalContent = ({ id, title, description, url }) => {
   <div id=${id}>
     ${
       url &&
-      `<img width='100%' src='${url}' alt='Card Image' class='img-fluid place__holder__image mb-3' />`
+      `<img width='100%' src=${url} alt='Card Image' class='img-fluid place__holder__image mb-3' />`
     }
     <strong class='text-muted text-sm'>Created on: ${date.toDateString()}</strong>
     <h2 class='mb-3'>${title}</h2>
@@ -88,13 +88,43 @@ const htmlModalContent = ({ id, title, description, url }) => {
   </div>`;
 };
 
+
+// converting JSON to string for local storage
 const updateLocalStorage =() =>{
   localStorage.setItem(
-    "tasky",
+    "task",
     JSON.stringify({
       tasks: state.taskList,
     })
   );
 };
 
-//Load initial data
+//Load initial data----------converting string to JSON for card rendering
+const loadInitialData = () => {
+  const localStorageCopy =JSON.parse(localStorage.task);
+
+  if(localStorageCopy) state.taskList = localStorageCopy.tasks;
+
+  state.taskList.map((cardDate)=> {
+    taskContents.innerAdjacentHTML("beforeend", htmlTaskContent(cardDate))
+  });
+};
+
+//when we update or edit
+const handleSubmit = (event) => {
+  const id = `${Date.now()}`;
+  const input = {
+    url: document.getElementById("imageUrl").value,
+    title: document.getElementById("taskTitle").value,
+    type: document.getElementById("tags").value,
+    taskDescription: document.getElementById("taskDescription").value
+  };
+  if(input.title === "" || input.tags === "" || input.taskDescription === ""){
+    return alert("please fill all the necessary fields:");
+  }
+  taskContents.innerAdjacentHTML("beforeend", htmlTaskContent({...input, id})
+  );
+  state.taskList.push({...input, id});
+
+  updateLocalStorage();
+};
